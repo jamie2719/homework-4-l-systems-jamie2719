@@ -12,10 +12,11 @@ import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
 import { print } from 'util';
 import * as OBJ from 'webgl-obj-loader';
 import MeshDrawable from './geometry/MeshDrawable';
-//import stringToLinkedList from './LSystem/CharNode';
-//import linkedListToString from './LSystem/CharNode';
 import LSystem from './LSystem/LSystem';
 import CharNode from './LSystem/CharNode';
+import TurtleParser from './LSystem/TurtleParser';
+import Turtle from './LSystem/Turtle';
+import Branch from './geometry/Branch';
 
 // Define an object with application parameters and button callbacks
 // This will be referred to by dat.GUI's functions that add GUI elements.
@@ -33,6 +34,47 @@ let cube: Cube;
 let currTime: number = 0;
 let meshDrawable : MeshDrawable;
 let lsystem: LSystem;
+let turtleParser: TurtleParser;
+//original obj data for branches
+let indicesB: Uint32Array; 
+let positionsB: Float32Array;
+let normalsB: Float32Array;
+
+function loadMeshComponents() {
+  // const canvas = <HTMLCanvasElement> document.getElementById('canvas');
+  // var gl = <WebGL2RenderingContext> canvas.getContext('webgl2');
+  // var objStr = document.getElementById('cube.obj').innerHTML;
+    
+  // var mesh = new OBJ.Mesh(objStr);
+  // OBJ.initMeshBuffers(gl, mesh);
+
+  // positionsB = new Float32Array(mesh.vertices.length + mesh.vertices.length / 3.0);
+  // normalsB = new Float32Array(mesh.vertexNormals.length +  mesh.vertexNormals.length / 3.0);
+  // indicesB = new Uint32Array(mesh.indices);
+    
+
+  // var j = 0;
+  // for(var i = 0; i < mesh.vertices.length; i+=3) {
+  //   positionsB[j] = mesh.vertices[i];
+  //   positionsB[j+1] = mesh.vertices[i+1];
+  //   positionsB[j+2] = mesh.vertices[i+2];
+  //   positionsB[j+3] = 1;
+  //   j+=4;
+  // }
+
+
+  // var k = 0;
+  // for(var i=0; i < mesh.vertexNormals.length; i+=3) {
+  //   normalsB[k] = mesh.vertexNormals[i];
+  //   normalsB[k+1] = mesh.vertexNormals[i+1];
+  //   normalsB[k+2] = mesh.vertexNormals[i+2];
+  //   normalsB[k+3] = 0;
+  //   k+=4;
+  // }
+}
+
+
+
 
 function loadScene() {
   // icosphere = new Icosphere(vec3.fromValues(0, 0, 0), 1, controls.tesselations);
@@ -42,21 +84,43 @@ function loadScene() {
   //  cube = new Cube(vec3.fromValues(0, 0, 0));
   //  cube.create();
 
-  meshDrawable = new MeshDrawable(vec3.fromValues(0, 0, 0));
-  meshDrawable.create();
-  lsystem = new LSystem("HX", 5);
+  //loadMeshComponents();
+
+  meshDrawable = new MeshDrawable();
+ 
+  lsystem = new LSystem("FBXFB", 0);
   lsystem.doIterations();
+
+  //load in default branch vertex data
+  var branchDef = new Branch(vec3.fromValues(0, 0, 0));
+  branchDef.loadMesh();
+  //create first turtle
+  var currTurtle = new Turtle(vec3.fromValues(0, 0, 0), vec3.fromValues(0, 0, 0), vec3.fromValues(1, 1, 1));
+  //console.log(currTurtle);
+  //create turtle stack
+  turtleParser = new TurtleParser(currTurtle);
+  //set turtle stack's default branch to the branch you created
+  turtleParser.defaultBranch = branchDef;
+  //console.log(branchDef);
+  turtleParser.createGrammar();
+  //console.log(meshDrawable.indices);
+  meshDrawable = turtleParser.renderSymbols(CharNode.stringToLinkedList(lsystem.seed), meshDrawable);
+  //console.log(meshDrawable.indices);
+  //console.log(meshDrawable);
+  meshDrawable.create();
+  //console.log(meshDrawable.indices);
+  //console.log(meshDrawable.positions);
 
 }
 
+//keep resizeable arrays for each thing in drawable class and store copy of original obj data
+//- each time you transform position of new branch/component, convert original obj data to vec4s,
+//multiply each by transformation, convert back to vbo arrays, append these arrays to resizeable arrays
+//finally, call create on all resizeable arrays
+
+
 
 function main() {
-  // var head = CharNode.stringToLinkedList("HX");
-  // console.log(head);//CharNode.linkedListToString(head));
-  
-  //printLinkedList(head);
-
-
   // Initial display for framerate
   const stats = Stats();
   stats.setMode(0);

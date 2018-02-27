@@ -1,23 +1,23 @@
-import Rule from './Rule';
+import ExpansionRule from './ExpansionRule';
 import CharNode from './CharNode'
 
 
 class LSystem {
-    grammar : Map<string, Rule>;
+    grammar : Map<string, ExpansionRule>;
     seed: string;
     iterations: number;
 
     constructor(seed: string, iter: number) {
         this.seed = seed;
         this.iterations = iter;
-        this.grammar = new Map<string, Rule>();
+        this.grammar = new Map<string, ExpansionRule>();
         this.createGrammar();
     }
 
 
     createGrammar() {
-        this.grammar.set('H', new Rule(1.0, 'X'));
-        this.grammar.set('X', new Rule(1.0, 'HH'));
+        this.grammar.set('F', new ExpansionRule(1.0, 'BX'));
+        this.grammar.set('X', new ExpansionRule(1.0, 'F'));
         //FINISH SETTING UP GRAMMAR HERE
     }
 
@@ -30,18 +30,23 @@ class LSystem {
             var oldPrev = curr.prev;
             var currChar = curr.char;
             var expand = this.grammar.get(currChar);
-            //loop through expanded and create a new node for each one
-            //set next of last one to the old next and set prev of first one to old prev
-            var expandedHead = CharNode.stringToLinkedList(expand.expanded);
-            //link old prev to head of expanded string
-            CharNode.linkNodes(oldPrev, expandedHead);
 
-            var expandedLast = expandedHead;
-            while(expandedLast.next != null) {
-                expandedLast = expandedLast.next;
+            //if there is an expanded string for thie character in the grammar
+            if(expand != null) {
+                var expandedHead = CharNode.stringToLinkedList(expand.expanded);
+                //link old prev to head of expanded string
+                CharNode.linkNodes(oldPrev, expandedHead);
+
+                var expandedLast = expandedHead;
+
+                while(expandedLast.next != null) {
+                    expandedLast = expandedLast.next;
+                }
+                //link last of expanded string to old next
+                CharNode.linkNodes(expandedLast, oldNext);
+            
+            
             }
-            //link last of expanded string to old next
-            CharNode.linkNodes(expandedLast, oldNext);
             
             
             //if you've reached the end of the input string, loop back to the head and return the head
@@ -55,12 +60,14 @@ class LSystem {
         }
        
         this.seed = CharNode.linkedListToString(curr);
-        console.log(this.seed);
+        
     }
 
     doIterations() {
+        console.log(this.seed);
         for(var i = 0; i < this.iterations; i++) {
             this.expandSeed();
+            console.log(this.seed);
         }
     }
    

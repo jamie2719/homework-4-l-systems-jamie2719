@@ -3,7 +3,7 @@ import Drawable from '../rendering/gl/Drawable';
 import {gl} from '../globals';
 
   
-class Rule {
+class ExpansionRule {
   probability : number;
   expanded : string;
   
@@ -14,5 +14,5 @@ class Rule {
 
 };
   
-  export default Rule;
+  export default ExpansionRule;
   
