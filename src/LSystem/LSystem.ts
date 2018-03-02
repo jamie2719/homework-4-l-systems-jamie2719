@@ -3,25 +3,29 @@ import CharNode from './CharNode'
 
 
 class LSystem {
-    grammar : Map<string, ExpansionRule>;
+    grammar : Map<string, Array<ExpansionRule>>;
     seed: string;
     iterations: number;
 
     constructor(seed: string, iter: number) {
         this.seed = seed;
         this.iterations = iter;
-        this.grammar = new Map<string, ExpansionRule>();
+        this.grammar = new Map<string, Array<ExpansionRule>>();
         this.createGrammar();
     }
 
-
     createGrammar() {
-        this.grammar.set('F', new ExpansionRule(1.0, 'BX'));
-        this.grammar.set('X', new ExpansionRule(1.0, 'F'));
-        //FINISH SETTING UP GRAMMAR HERE
+        this.grammar.set('F', new Array<ExpansionRule>(new ExpansionRule(.6, 'F[+FF]'), new ExpansionRule(.4, 'F[RFF]')));//new ExpansionRule(.6, 'F[-F][+F][RF]'), new ExpansionRule(.4, 'F[+F][-F][LF]')));
+        this.grammar.set('+', new Array<ExpansionRule>(new ExpansionRule(.7, '++F'), new ExpansionRule(.3, 'LLF')));
+        this.grammar.set('-', new Array<ExpansionRule>(new ExpansionRule(.7, '--FF'), new ExpansionRule(.3, 'RRFF')));
+        this.grammar.set('R', new Array<ExpansionRule>(new ExpansionRule(.3, 'QF'), new ExpansionRule(.7, 'WF')));
+        this.grammar.set(']', new Array<ExpansionRule>(new ExpansionRule(1, ']F')));
+        this.grammar.set('[', new Array<ExpansionRule>(new ExpansionRule(1, '[[RF]')));
+    
     }
 
     expandSeed() {
+        
         var axiom = CharNode.stringToLinkedList(this.seed);
         var curr = axiom;
         //iterate through seed and for each char, look it up in the rulebook and replace the char with that entry
@@ -29,26 +33,44 @@ class LSystem {
             var oldNext = curr.next;
             var oldPrev = curr.prev;
             var currChar = curr.char;
-            var expand = this.grammar.get(currChar);
+            var expand = this.grammar.get(currChar); //set of expansion rules that map to this char
 
             //if there is an expanded string for thie character in the grammar
             if(expand != null) {
-                var expandedHead = CharNode.stringToLinkedList(expand.expanded);
+                var expandedHead;
+                //if there is more than one option for expanding with different probabilities
+                if(expand.length != 1) {
+                    //loop through and choose one at random
+                    for(var i = 0; i < expand.length-1; i++) {
+                        var rand = Math.random();
+                        var currProb = expand[i].probability;
+                        if (rand < currProb) {
+                            expandedHead = CharNode.stringToLinkedList(expand[i].expanded);
+                        }
+                        else {
+                            expandedHead = CharNode.stringToLinkedList(expand[i+1].expanded);
+                        }
+                        
+                    }
+                }
+                //else choose the first and only option in the array of possibilities
+                else {
+                    expandedHead = CharNode.stringToLinkedList(expand[0].expanded);
+                }
                 //link old prev to head of expanded string
                 CharNode.linkNodes(oldPrev, expandedHead);
 
                 var expandedLast = expandedHead;
-
+           
                 while(expandedLast.next != null) {
                     expandedLast = expandedLast.next;
                 }
                 //link last of expanded string to old next
                 CharNode.linkNodes(expandedLast, oldNext);
             
+                curr = expandedLast;
             
             }
-            
-            
             //if you've reached the end of the input string, loop back to the head and return the head
             if(curr.next == null) {
                 while(curr.prev != null) {
@@ -58,16 +80,12 @@ class LSystem {
             }
            
         }
-       
         this.seed = CharNode.linkedListToString(curr);
-        
     }
 
     doIterations() {
-        console.log(this.seed);
         for(var i = 0; i < this.iterations; i++) {
             this.expandSeed();
-            console.log(this.seed);
         }
     }
    

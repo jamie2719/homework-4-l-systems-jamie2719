@@ -25,7 +25,9 @@ const controls = {
   Red: 1,
   Green: 0,
   Blue: 1,
-  Shader: 'Lambert'
+  Iterations: 0,
+  Axiom: "F",
+  Reload: function() {loadScene()}
 };
 
 let icosphere: Icosphere;
@@ -77,39 +79,27 @@ function loadMeshComponents() {
 
 
 function loadScene() {
-  // icosphere = new Icosphere(vec3.fromValues(0, 0, 0), 1, controls.tesselations);
-  // icosphere.create();
-  // square = new Square(vec3.fromValues(0, 0, 0));
-  // square.create();
-  //  cube = new Cube(vec3.fromValues(0, 0, 0));
-  //  cube.create();
-
   //loadMeshComponents();
 
   meshDrawable = new MeshDrawable();
- 
-  lsystem = new LSystem("FBXFB", 0);
+
+  lsystem = new LSystem(controls.Axiom, controls.Iterations);
   lsystem.doIterations();
+  console.log(lsystem.seed);
 
   //load in default branch vertex data
   var branchDef = new Branch(vec3.fromValues(0, 0, 0));
   branchDef.loadMesh();
   //create first turtle
-  var currTurtle = new Turtle(vec3.fromValues(0, 0, 0), vec3.fromValues(0, 0, 0), vec3.fromValues(1, 1, 1));
-  //console.log(currTurtle);
+  var currTurtle = new Turtle(vec3.fromValues(0, 0, 0));
   //create turtle stack
   turtleParser = new TurtleParser(currTurtle);
+  
   //set turtle stack's default branch to the branch you created
   turtleParser.defaultBranch = branchDef;
-  //console.log(branchDef);
-  turtleParser.createGrammar();
-  //console.log(meshDrawable.indices);
+  //turtleParser.createBranch();
   meshDrawable = turtleParser.renderSymbols(CharNode.stringToLinkedList(lsystem.seed), meshDrawable);
-  //console.log(meshDrawable.indices);
-  //console.log(meshDrawable);
   meshDrawable.create();
-  //console.log(meshDrawable.indices);
-  //console.log(meshDrawable.positions);
 
 }
 
@@ -135,7 +125,9 @@ function main() {
   gui.add(controls, 'Red', 0, 1).step(.05);
   gui.add(controls, 'Green', 0, 1).step(.05);
   gui.add(controls, 'Blue', 0, 1).step(.05);
-  gui.add(controls, 'Shader', ['Lambert', 'Custom']);
+  gui.add(controls, 'Iterations', 0, 10).step(1);
+  gui.add(controls, 'Axiom');
+  gui.add(controls, 'Reload');
 
   // get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
@@ -172,14 +164,16 @@ function main() {
     let color = vec4.fromValues(controls.Red, controls.Green, controls.Blue, 1);  
     lambert.setGeometryColor(color);
     renderer.clear();
-    if(controls.Shader == 'Lambert') {
-      renderer.render(camera, lambert, [
-        //icosphere,
-        //square,
-        //cube
-        meshDrawable
-      ]);
-    }
+    
+   
+
+    renderer.render(camera, lambert, [
+      //icosphere,
+      //square,
+      //cube
+      meshDrawable
+    ]);
+  
     stats.end();
 
     // Tell the browser to call `tick` again whenever it renders a new frame
