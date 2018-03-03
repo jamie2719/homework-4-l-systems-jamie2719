@@ -14,14 +14,16 @@ class LSystem {
         this.createGrammar();
     }
 
+
     createGrammar() {
-        this.grammar.set('F', new Array<ExpansionRule>(new ExpansionRule(.6, 'F[+FF]'), new ExpansionRule(.4, 'F[RFF]')));//new ExpansionRule(.6, 'F[-F][+F][RF]'), new ExpansionRule(.4, 'F[+F][-F][LF]')));
-        this.grammar.set('+', new Array<ExpansionRule>(new ExpansionRule(.7, '++F'), new ExpansionRule(.3, 'LLF')));
-        this.grammar.set('-', new Array<ExpansionRule>(new ExpansionRule(.7, '--FF'), new ExpansionRule(.3, 'RRFF')));
-        this.grammar.set('R', new Array<ExpansionRule>(new ExpansionRule(.3, 'QF'), new ExpansionRule(.7, 'WF')));
-        this.grammar.set(']', new Array<ExpansionRule>(new ExpansionRule(1, ']F')));
-        this.grammar.set('[', new Array<ExpansionRule>(new ExpansionRule(1, '[[RF]')));
-    
+        this.grammar.set('F', new Array<ExpansionRule>(new ExpansionRule(.6, 'FL[+FL][-FL][RFL][EFL]'), new ExpansionRule(.4, 'FL[+FL]F[RFL]')));//new ExpansionRule(.6, 'F[-F][+F][RF]'), new ExpansionRule(.4, 'F[+F][-F][LF]')));
+        this.grammar.set('+', new Array<ExpansionRule>(new ExpansionRule(.7, '[FL]'), new ExpansionRule(.3, '[FFL]')));
+        this.grammar.set('-', new Array<ExpansionRule>(new ExpansionRule(.7, '-FRF'), new ExpansionRule(.3, '[RFF]')));
+        // this.grammar.set('R', new Array<ExpansionRule>(new ExpansionRule(.3, 'QF'), new ExpansionRule(.7, 'WF')));
+        // this.grammar.set('L', new Array<ExpansionRule>(new ExpansionRule(.3, 'BF'), new ExpansionRule(.7, 'VF')));
+        this.grammar.set(']', new Array<ExpansionRule>(new ExpansionRule(.4, '[+F]'), new ExpansionRule(.6, '[-F]')));
+        //this.grammar.set('[', new Array<ExpansionRule>(new ExpansionRule(1, '[[RF]')));
+
     }
 
     expandSeed() {

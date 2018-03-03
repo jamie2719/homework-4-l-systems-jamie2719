@@ -5,10 +5,8 @@ import * as OBJ from 'webgl-obj-loader';
 import * as Mesh from 'webgl-obj-loader';
 import MeshDrawable from './MeshDrawable';
 
-//contains the vertex data of the loaded branch object, but does not create buffers 
-class Branch extends MeshDrawable {
- 
-
+//contains the vertex data of the loaded leaf object, but does not create buffers 
+class Leaf extends MeshDrawable {
     center: vec4;
 
 
@@ -20,7 +18,7 @@ class Branch extends MeshDrawable {
     loadMesh() {
       const canvas = <HTMLCanvasElement> document.getElementById('canvas');
       var gl = <WebGL2RenderingContext> canvas.getContext('webgl2');
-      var objStr = document.getElementById('branch1OBJ.obj').innerHTML;
+      var objStr = document.getElementById('leaf.obj').innerHTML;
         
       var mesh = new OBJ.Mesh(objStr);
       OBJ.initMeshBuffers(gl, mesh);
@@ -53,8 +51,8 @@ class Branch extends MeshDrawable {
 
 
   create() {
-    console.log(`Loaded branch`);
+    console.log(`Loaded leaf`);
   }
 };
 
-export default Branch;   
+export default Leaf;   

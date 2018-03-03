@@ -5,32 +5,24 @@ import Branch from './../geometry/Branch';
 import {vec3, vec4} from 'gl-matrix';
 import {mat4} from 'gl-matrix';
 import MeshDrawable from '../geometry/MeshDrawable';
-
+import Leaf from './../geometry/Leaf';
 
 class TurtleParser {
     renderGrammar : Map<string, Function>;
     seed: string;
     currTurtle: Turtle;
     defaultBranch: Branch;
+    defaultLeaf: Leaf;
     currBranch: Branch;
     turtleHead: Turtle;
 
     constructor(curr: Turtle) {
-       // this.defaultBranch = new Branch(vec3.fromValues(0, 0, 0));
-        //this.currBranch = new Branch(vec3.fromValues(0, 0, 0));
-        //this.createBranch(vec3.fromValues(0, 1, 0));
+
         this.currTurtle = curr;
         this.turtleHead = null;
         this.renderGrammar = new Map<string, Function>();
     }
 
-    createBranch(center: vec3) {
-        var newBranch = new Branch(center);
-        newBranch.positions = new Float32Array(this.defaultBranch.positions);
-        newBranch.normals = new Float32Array(this.defaultBranch.normals);
-        newBranch.indices = new Uint32Array(this.defaultBranch.indices);
-        return newBranch;
-    }
 
     shiftBranch(center:vec3, newBranch: Branch) {
         for(var i = 0; i < newBranch.positions.length; i+=4) {
@@ -41,6 +33,34 @@ class TurtleParser {
 
         return newBranch;
     }
+
+    shiftLeaf(center:vec3, newLeaf: Leaf) {
+        for(var i = 0; i < newLeaf.positions.length; i+=4) {
+            newLeaf.positions[i] += center[0];
+            newLeaf.positions[i+1] += center[1];
+            newLeaf.positions[i+2] += center[2];
+        }
+
+        return newLeaf;
+    }
+
+    createBranch(center: vec3) {
+        var newBranch = new Branch(center);
+        newBranch.positions = new Float32Array(this.defaultBranch.positions);
+        newBranch.normals = new Float32Array(this.defaultBranch.normals);
+        newBranch.indices = new Uint32Array(this.defaultBranch.indices);
+
+        return newBranch;
+    }
+
+    createLeaf(center: vec3) {
+        var newLeaf = new Leaf(center);
+        newLeaf.positions = new Float32Array(this.defaultLeaf.positions);
+        newLeaf.normals = new Float32Array(this.defaultLeaf.normals);
+        newLeaf.indices = new Uint32Array(this.defaultLeaf.indices);
+        return newLeaf;
+    }
+
 
 
 
@@ -146,11 +166,11 @@ class TurtleParser {
         }
 
         //rotate around x axis
-        else if(symbolNode.char == 'L') {
-            this.currTurtle.rotate(vec3.fromValues(70, 0, 0));
+        else if(symbolNode.char == 'E') {
+            this.currTurtle.rotate(vec3.fromValues(40, 0, 0));
         }
         else if(symbolNode.char == 'R') {
-            this.currTurtle.rotate(vec3.fromValues(-70, 0, 0));
+            this.currTurtle.rotate(vec3.fromValues(-40, 0, 0));
         }
         else if(symbolNode.char == 'B') {
             this.currTurtle.rotate(vec3.fromValues(20, 0, 0));
@@ -158,13 +178,30 @@ class TurtleParser {
         else if(symbolNode.char == 'V') {
             this.currTurtle.rotate(vec3.fromValues(-20, 0, 0));
         }
-        else if(symbolNode.char == 'Q') {
-            this.currTurtle.rotate(vec3.fromValues(0, 65, 0));
-        }
-        else if(symbolNode.char == 'W') {
-            this.currTurtle.rotate(vec3.fromValues(0, -65, 0));
-        }
+        else if(symbolNode.char == 'L') {
+           var posVectors = TurtleParser.VBOtoVec4(this.defaultLeaf.positions);
+              var norVectors = TurtleParser.VBOtoVec4(this.defaultLeaf.normals);
+              
+              posVectors = this.transformVectors(posVectors, this.currTurtle.rotMat);
+              norVectors = this.transformVectors(norVectors, this.currTurtle.rotMat); //change to inverse transpose
+   
+              //create new leaf at that new center point
+              var newCenter = vec3.create();
+              vec3.add(newCenter, this.currTurtle.currPos, vec3.fromValues(.6, 0, 0));
+              var newLeaf = this.createLeaf(newCenter);
 
+  
+              newLeaf.positions = TurtleParser.Vec4toVBO(posVectors);
+              newLeaf.normals = TurtleParser.Vec4toVBO(norVectors);
+
+              console.log(newLeaf.positions);
+  
+              //shift positions of default leaf so new leaf is at correct offset
+              newLeaf = this.shiftLeaf(newCenter, newLeaf);
+  
+              //actually draw leaf
+              meshDrawable = meshDrawable.addMeshComponent(newLeaf);
+        }
         return meshDrawable;
 
     };
@@ -180,6 +217,3 @@ class TurtleParser {
 
 };
 export default TurtleParser;
-
-//start by just creating a new mesh drawable for each transformed component and calling draw on each one
-//eventually replace each draw call by appending to a giant vbo of one single mesh drawable and call draw on that

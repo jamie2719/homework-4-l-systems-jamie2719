@@ -17,16 +17,17 @@ import CharNode from './LSystem/CharNode';
 import TurtleParser from './LSystem/TurtleParser';
 import Turtle from './LSystem/Turtle';
 import Branch from './geometry/Branch';
+import Leaf from './geometry/Leaf';
+import Trunk from './geometry/Trunk';
 
 // Define an object with application parameters and button callbacks
 // This will be referred to by dat.GUI's functions that add GUI elements.
 const controls = {
-  tesselations: 5,
-  Red: 1,
-  Green: 0,
-  Blue: 1,
+  Red: .25,
+  Green: .6,
+  Blue: .25,
   Iterations: 0,
-  Axiom: "F",
+  Axiom: "FL",
   Reload: function() {loadScene()}
 };
 
@@ -42,44 +43,9 @@ let indicesB: Uint32Array;
 let positionsB: Float32Array;
 let normalsB: Float32Array;
 
-function loadMeshComponents() {
-  // const canvas = <HTMLCanvasElement> document.getElementById('canvas');
-  // var gl = <WebGL2RenderingContext> canvas.getContext('webgl2');
-  // var objStr = document.getElementById('cube.obj').innerHTML;
-    
-  // var mesh = new OBJ.Mesh(objStr);
-  // OBJ.initMeshBuffers(gl, mesh);
-
-  // positionsB = new Float32Array(mesh.vertices.length + mesh.vertices.length / 3.0);
-  // normalsB = new Float32Array(mesh.vertexNormals.length +  mesh.vertexNormals.length / 3.0);
-  // indicesB = new Uint32Array(mesh.indices);
-    
-
-  // var j = 0;
-  // for(var i = 0; i < mesh.vertices.length; i+=3) {
-  //   positionsB[j] = mesh.vertices[i];
-  //   positionsB[j+1] = mesh.vertices[i+1];
-  //   positionsB[j+2] = mesh.vertices[i+2];
-  //   positionsB[j+3] = 1;
-  //   j+=4;
-  // }
-
-
-  // var k = 0;
-  // for(var i=0; i < mesh.vertexNormals.length; i+=3) {
-  //   normalsB[k] = mesh.vertexNormals[i];
-  //   normalsB[k+1] = mesh.vertexNormals[i+1];
-  //   normalsB[k+2] = mesh.vertexNormals[i+2];
-  //   normalsB[k+3] = 0;
-  //   k+=4;
-  // }
-}
-
-
 
 
 function loadScene() {
-  //loadMeshComponents();
 
   meshDrawable = new MeshDrawable();
 
@@ -89,14 +55,21 @@ function loadScene() {
 
   //load in default branch vertex data
   var branchDef = new Branch(vec3.fromValues(0, 0, 0));
+  var leafDef = new Leaf(vec3.fromValues(0, 0, 0));
+  var trunk = new Trunk(vec3.fromValues(0, 0, 0));
   branchDef.loadMesh();
+  leafDef.loadMesh();
+  trunk.loadMesh();
+  meshDrawable.addMeshComponent(trunk);
   //create first turtle
   var currTurtle = new Turtle(vec3.fromValues(0, 0, 0));
   //create turtle stack
   turtleParser = new TurtleParser(currTurtle);
+
   
   //set turtle stack's default branch to the branch you created
   turtleParser.defaultBranch = branchDef;
+  turtleParser.defaultLeaf = leafDef;
   //turtleParser.createBranch();
   meshDrawable = turtleParser.renderSymbols(CharNode.stringToLinkedList(lsystem.seed), meshDrawable);
   meshDrawable.create();
@@ -121,11 +94,10 @@ function main() {
 
   // Add controls to the gui
   const gui = new DAT.GUI();
-  gui.add(controls, 'tesselations', 0, 8).step(1);
   gui.add(controls, 'Red', 0, 1).step(.05);
   gui.add(controls, 'Green', 0, 1).step(.05);
   gui.add(controls, 'Blue', 0, 1).step(.05);
-  gui.add(controls, 'Iterations', 0, 10).step(1);
+  gui.add(controls, 'Iterations', 0, 3).step(1);
   gui.add(controls, 'Axiom');
   gui.add(controls, 'Reload');
 

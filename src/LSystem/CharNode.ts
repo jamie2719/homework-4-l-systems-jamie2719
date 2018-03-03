@@ -14,14 +14,6 @@ class CharNode {
     
         for(var i = 1; i < input_string.length; i++) {
             var currChar = input_string.charAt(i);
-            //create node for curr char
-            //curr = new CharNode(currChar);
-            //set next to be the node of the next char
-            // curr.next = new CharNode(currChar);
-            // //set the next's prev to be the current node
-            // curr.next.prev = curr;
-            // // set the curr to be the next and keep looping
-            // curr = curr.next;
             CharNode.linkNodes(curr, new CharNode(currChar));
             curr = curr.next;
         }
